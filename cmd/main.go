@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	"ecommerce_store/pkg/routes"
@@ -22,4 +25,8 @@ func createPort() string {
 func main() {
 	r := mux.NewRouter()
 	routes.AdminRoutes(r)
+	http.Handle("/", r)
+	port := createPort()
+	fmt.Printf("Server online at %v\n", port)
+	log.Fatal(http.ListenAndServe("localhost"+port, r))
 }
