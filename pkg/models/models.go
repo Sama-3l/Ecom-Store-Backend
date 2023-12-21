@@ -8,34 +8,19 @@ import (
 
 var db *gorm.DB
 
-// type Category struct {
-// 	gorm.Model
-// 	Name     string    `gorm:"column:category_name" json:"category_name"`
-// 	Products []Product `gorm:"many2many:category_product;ForeignKey:CategoryID" json:"products"`
-// }
-
-// type Product struct {
-// 	gorm.Model
-// 	Name        string   `gorm:"column:product_name" json:"product_name"`
-// 	Price       float32  `json:"price"`
-// 	Description string   `json:"description"`
-// 	CategoryID  uint     `json:"category_id"`
-// 	Category    Category `gorm:"foreignKey:CategoryID" json:"category"`
-// }
-
 type Category struct {
 	gorm.Model
-	CategoryName string `json:"category_name"`
+	CategoryName string `gorm:"unique" json:"category_name"`
 	Products     []Product
 }
 
 type Product struct {
 	gorm.Model
+	ProdID      string `gorm:"unique" json:"prod_id"`
 	ProductName string `json:"product_name"`
 	Price       float32
 	Description string
 	CategoryID  uint
-	// Category     Category `gorm:"foreignKey:CategoryID"`
 }
 
 func init() {
@@ -44,10 +29,10 @@ func init() {
 	db.AutoMigrate(&Category{}, &Product{})
 }
 
-func (category *Category) AddCategory() *Category {
-	// db.NewRecord(&category)
-	db.Create(&category)
-	return category
+func (category *Category) AddCategory() (*Category, error) {
+	db.NewRecord(&category)
+	err := db.Create(&category).Error
+	return category, err
 }
 
 func GetProductByCategory(id int64) []Product {

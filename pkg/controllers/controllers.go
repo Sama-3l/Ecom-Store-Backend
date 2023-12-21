@@ -14,11 +14,16 @@ import (
 func AddCategory(w http.ResponseWriter, req *http.Request) {
 	Category := &models.Category{}
 	utils.ParseBody(req, Category)
-	c := Category.AddCategory()
-	res, _ := json.Marshal(c)
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
-	fmt.Println(c)
+	c, err := Category.AddCategory()
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+	} else {
+		res, _ := json.Marshal(c)
+		w.WriteHeader(http.StatusOK)
+		w.Write(res)
+		fmt.Println(c)
+	}
+
 }
 
 func GetProductByCategory(w http.ResponseWriter, req *http.Request) {
