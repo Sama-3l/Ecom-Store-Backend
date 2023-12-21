@@ -8,6 +8,9 @@ import (
 
 var AdminRoutes = func(router *mux.Router) {
 	router.HandleFunc("/category", controllers.AddCategory).Methods("POST")
+
+	router.HandleFunc("/category/products/{category_id}", controllers.GetProductByCategory).Methods("GET")
+
 	router.HandleFunc("/category", controllers.AllCategories).Methods("GET")
 	router.HandleFunc("/category/{category_id}", controllers.RemoveCategory).Methods("DELETE")
 	router.HandleFunc("/category/{category_id}", controllers.GetCategoryById).Methods("GET")
