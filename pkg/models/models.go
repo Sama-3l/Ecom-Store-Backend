@@ -67,3 +67,15 @@ func AddProductToCategory(category string, products RequestBody) (*Category, err
 	err = db.Where("category_name = ?", category).Preload("Products").Find(&currentCategory).Error
 	return &currentCategory, err
 }
+
+func GetProductById(product_id string) (*Product, *gorm.DB) {
+	var product Product
+	db := db.Where("prod_id = ?", product_id).Find(&product)
+	return &product, db
+}
+
+func DeleteProduct(product_id string) (*Product, error) {
+	var product Product
+	err := db.Where("prod_id = ?", product_id).Delete(&product).Error
+	return &product, err
+}

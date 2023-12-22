@@ -63,6 +63,65 @@ func AddProductToCategory(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func GetProductById(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	prod_id := vars["product_id"]
+	prod, err := models.GetProductById(prod_id)
+	if err != nil {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		res, _ := json.Marshal(prod)
+		w.WriteHeader(http.StatusOK)
+		w.Write(res)
+	}
+}
+
+func UpdateProduct(w http.ResponseWriter, req *http.Request) {
+	updateProduct := &models.Product{}
+	utils.ParseBody(req, updateProduct)
+	vars := mux.Vars(req)
+	prod_id := vars["product_id"]
+	prod, db := models.GetProductById(prod_id)
+	if db.Error != nil {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		if updateProduct.Description != "" {
+			prod.Description = updateProduct.Description
+		}
+		if updateProduct.ProductName != "" {
+			prod.ProductName = updateProduct.ProductName
+		}
+		if updateProduct.Price != 0 {
+			prod.Price = updateProduct.Price
+		}
+		if updateProduct.ProdID != "" {
+			prod.ProdID = updateProduct.ProdID
+		}
+		err := db.Save(&prod).Error
+		if err != nil {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			res, _ := json.Marshal(prod)
+			w.WriteHeader(http.StatusOK)
+			w.Write(res)
+		}
+
+	}
+}
+
+func DeleteProduct(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	prod_id := vars["product_id"]
+	prod, err := models.DeleteProduct(prod_id)
+	if err != nil {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		res, _ := json.Marshal(prod)
+		w.WriteHeader(http.StatusOK)
+		w.Write(res)
+	}
+}
+
 func GetCategoryById(w http.ResponseWriter, req *http.Request) {
 
 }
@@ -80,13 +139,5 @@ func AllProducts(w http.ResponseWriter, req *http.Request) {
 }
 
 func ProductById(w http.ResponseWriter, req *http.Request) {
-
-}
-
-func DeleteProduct(w http.ResponseWriter, req *http.Request) {
-
-}
-
-func UpdateProduct(w http.ResponseWriter, req *http.Request) {
 
 }
