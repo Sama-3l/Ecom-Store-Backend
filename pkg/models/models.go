@@ -66,11 +66,4 @@ func AddProductToCategory(category string, products RequestBody) (*Category, err
 	}
 	err = db.Where("category_name = ?", category).Preload("Products").Find(&currentCategory).Error
 	return &currentCategory, err
-
-	// if err := db.Create(&products.Products).Error; err != nil {
-	// 	return &currentCategory, err
-	// }
-
-	// db := db.Where("category_name = ?", category).Preload("Products").Find(&currentCategory)
-	// return &currentCategory, db.Error
 }
