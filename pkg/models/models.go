@@ -18,7 +18,7 @@ type Product struct {
 	gorm.Model
 	ProdID      string `gorm:"unique" json:"prod_id"`
 	ProductName string `json:"product_name"`
-	Price       float32
+	Price       string
 	Description string
 	CategoryID  uint
 }
@@ -45,6 +45,35 @@ func GetAllCategories() ([]Category, error) {
 	return Categories, err
 }
 
+func GetCategoryById(id int64) (*Category, *gorm.DB) {
+	var category Category
+	err := db.Where("id = ?", id).Find(&category).Error
+	if err != nil {
+		return &category, db
+	}
+	db.Where("category_id = ?", id).Find(&category.Products)
+	return &category, db
+}
+
+func RemoveCategory(id int64, maintain_rec bool) (*Category, error) {
+	var category Category
+	var err error
+	if maintain_rec {
+		err = db.Where("id = ?", id).Delete(&category).Error
+		if err != nil {
+			return &category, err
+		}
+		err = db.Where("category_id = ?", id).Delete(&category.Products).Error
+	} else {
+		err = db.Where("id = ?", id).Unscoped().Delete(&category).Error
+		if err != nil {
+			return &category, err
+		}
+		err = db.Where("category_id = ?", id).Unscoped().Delete(&category.Products).Error
+	}
+	return &category, err
+}
+
 func GetProductByCategory(id int64) []Product {
 	var products []Product
 	db.Where("category_id = ?", id).Find(&products)
@@ -66,6 +95,12 @@ func AddProductToCategory(category string, products RequestBody) (*Category, err
 	}
 	err = db.Where("category_name = ?", category).Preload("Products").Find(&currentCategory).Error
 	return &currentCategory, err
+}
+
+func GetAllProducts() (*RequestBody, error) {
+	var products RequestBody
+	err := db.Find(&products.Products).Error
+	return &products, err
 }
 
 func GetProductById(product_id string) (*Product, *gorm.DB) {

@@ -37,6 +37,73 @@ func GetAllCategories(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func GetCategoryById(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	id_string := vars["category_id"]
+	id, err := strconv.ParseInt(id_string, 10, 12)
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+	} else {
+		category, db := models.GetCategoryById(id)
+		if db.Error != nil {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			res, _ := json.Marshal(category)
+			w.WriteHeader(http.StatusOK)
+			w.Write(res)
+		}
+	}
+}
+
+func RemoveCategory(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	id_string := vars["category_id"]
+	rec := vars["record"]
+	fmt.Println(id_string)
+	maintain_rec, _ := strconv.ParseBool(rec)
+	id, _ := strconv.ParseInt(id_string, 10, 12)
+	category, e := models.RemoveCategory(id, maintain_rec)
+	if e != nil {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		res, _ := json.Marshal(category)
+		w.WriteHeader(http.StatusOK)
+		w.Write(res)
+	}
+
+}
+
+func UpdateCategory(w http.ResponseWriter, req *http.Request) {
+	updateCategory := &models.Category{}
+	utils.ParseBody(req, updateCategory)
+	vars := mux.Vars(req)
+	category_id := vars["category_id"]
+	id, _ := strconv.ParseInt(category_id, 10, 12)
+	category, db := models.GetCategoryById(id)
+	if db.Error != nil {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		if updateCategory.CategoryName != "" {
+			category.CategoryName = updateCategory.CategoryName
+		}
+		if updateCategory.Products != nil {
+			category.Products = updateCategory.Products
+		}
+		fmt.Println(category)
+		err := db.Save(&category).Error
+		if err != nil {
+			w.WriteHeader(http.StatusConflict)
+			res, _ := json.Marshal(category)
+			w.Write(res)
+		} else {
+			res, _ := json.Marshal(category)
+			w.WriteHeader(http.StatusOK)
+			w.Write(res)
+		}
+
+	}
+}
+
 func GetProductByCategory(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	categoryID, _ := strconv.ParseInt(vars["category_id"], 10, 12)
@@ -91,7 +158,7 @@ func UpdateProduct(w http.ResponseWriter, req *http.Request) {
 		if updateProduct.ProductName != "" {
 			prod.ProductName = updateProduct.ProductName
 		}
-		if updateProduct.Price != 0 {
+		if updateProduct.Price != "" {
 			prod.Price = updateProduct.Price
 		}
 		if updateProduct.ProdID != "" {
@@ -122,20 +189,15 @@ func DeleteProduct(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func GetCategoryById(w http.ResponseWriter, req *http.Request) {
-
-}
-
-func RemoveCategory(w http.ResponseWriter, req *http.Request) {
-
-}
-
-func UpdateCategory(w http.ResponseWriter, req *http.Request) {
-
-}
-
 func AllProducts(w http.ResponseWriter, req *http.Request) {
-
+	products, err := models.GetAllProducts()
+	if err != nil {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		res, _ := json.Marshal(products.Products)
+		w.WriteHeader(http.StatusOK)
+		w.Write(res)
+	}
 }
 
 func ProductById(w http.ResponseWriter, req *http.Request) {
