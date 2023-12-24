@@ -199,7 +199,3 @@ func AllProducts(w http.ResponseWriter, req *http.Request) {
 		w.Write(res)
 	}
 }
-
-func ProductById(w http.ResponseWriter, req *http.Request) {
-
-}
